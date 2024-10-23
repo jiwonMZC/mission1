@@ -1,0 +1,30 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.9
+    commands:
+      - echo "Install git"
+      - yum install -y git
+
+  pre_build:
+    commands:
+      - echo "Start pre_build"
+      - git config --global user.email "jiwon.na@mz.co.kr"
+      - git config --global user.name "jiwonMZC"
+
+  build:
+    commands:
+      - echo "Detect changes"
+      # 최근 커밋과 이전 커밋 사이의 변경된 파일 목록 추출
+      - git diff --name-only HEAD~1 > changed_files.txt
+      - echo "Changed files:"
+      - cat changed_files.txt
+      # S3에 변경된 파일 목록 업로드
+      - aws s3 cp changed_files.txt s3://mission-s3-git-change-name-an2/changed_files.txt
+
+artifacts:
+  files:
+    - changed_files.txt
+  discard-paths: yes
